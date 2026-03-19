@@ -3,48 +3,40 @@ import httpx
 import respx
 from datetime import date
 
-from app.tools.transport_tool import fetch_flights
+from app.tools.transport_tool import fetch_flights, AVIATIONSTACK_URL
 
 
 @respx.mock
 @pytest.mark.asyncio
 async def test_fetch_flights_returns_options():
-    respx.post("https://api.amadeus.com/v1/security/oauth2/token").mock(
-        return_value=httpx.Response(200, json={"access_token": "tok123", "expires_in": 1799})
-    )
-    respx.get("https://api.amadeus.com/v2/shopping/flight-offers").mock(
+    respx.get(AVIATIONSTACK_URL).mock(
         return_value=httpx.Response(200, json={
             "data": [{
-                "itineraries": [{
-                    "duration": "PT12H0M",
-                    "segments": [{
-                        "carrierCode": "DL", "number": "123",
-                        "departure": {"iataCode": "JFK", "at": "2026-06-15T08:00:00"},
-                        "arrival": {"iataCode": "CDG", "at": "2026-06-15T20:00:00"},
-                    }],
-                }],
-                "price": {"total": "850.00", "currency": "USD"},
-                "travelerPricings": [{"fareDetailsBySegment": [{"cabin": "ECONOMY"}]}],
+                "airline": {"iata": "DL"},
+                "flight": {"iata": "DL123"},
+                "departure": {"iata": "JFK", "scheduled": "2026-06-15T08:00:00+00:00"},
+                "arrival": {"iata": "CDG", "scheduled": "2026-06-15T20:00:00+00:00"},
             }],
         })
     )
     flights = await fetch_flights(
         origin="JFK", destination="CDG", departure_date=date(2026, 6, 15),
-        adults=1, api_key="key", api_secret="secret",
+        adults=1, api_key="test_key",
     )
     assert len(flights) == 1
     assert flights[0].airline == "DL"
-    assert flights[0].price == 850.0
+    assert flights[0].flight_number == "DL123"
+    assert flights[0].duration_minutes == 720
 
 
 @respx.mock
 @pytest.mark.asyncio
 async def test_fetch_flights_handles_api_error():
-    respx.post("https://api.amadeus.com/v1/security/oauth2/token").mock(
-        return_value=httpx.Response(401, json={"error": "Unauthorized"})
+    respx.get(AVIATIONSTACK_URL).mock(
+        return_value=httpx.Response(401, json={"error": {"code": "invalid_access_key"}})
     )
     flights = await fetch_flights(
         origin="JFK", destination="CDG", departure_date=date(2026, 6, 15),
-        adults=1, api_key="bad", api_secret="bad",
+        adults=1, api_key="bad",
     )
     assert flights == []

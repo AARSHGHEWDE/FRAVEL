@@ -2,39 +2,51 @@ import httpx
 
 from app.models.restaurant import RestaurantOption
 
-YELP_SEARCH_URL = "https://api.yelp.com/v3/businesses/search"
-
-
-def _price_to_level(price_str: str) -> int:
-    return len(price_str) if price_str else 2
+FOURSQUARE_SEARCH_URL = "https://api.foursquare.com/v3/places/search"
 
 
 async def fetch_restaurants(
     location: str, api_key: str, cuisine: str | None = None, max_results: int = 20,
 ) -> list[RestaurantOption]:
     params: dict = {
-        "location": location,
-        "term": f"{cuisine} restaurants" if cuisine else "restaurants",
-        "sort_by": "rating", "limit": max_results,
+        "near": location,
+        "categories": "13000",  # Foursquare category ID for Food
+        "limit": max_results,
+        "sort": "RATING",
     }
-    headers = {"Authorization": f"Bearer {api_key}"}
+    if cuisine:
+        params["query"] = cuisine
+
+    headers = {
+        "Authorization": api_key,
+        "Accept": "application/json",
+    }
     async with httpx.AsyncClient() as client:
-        resp = await client.get(YELP_SEARCH_URL, params=params, headers=headers)
+        resp = await client.get(FOURSQUARE_SEARCH_URL, params=params, headers=headers)
     if resp.status_code != 200:
         return []
 
     restaurants: list[RestaurantOption] = []
-    for biz in resp.json().get("businesses", []):
-        categories = biz.get("categories", [])
-        cuisine_name = categories[0].get("title", "Unknown") if categories else "Unknown"
-        address_parts = biz.get("location", {}).get("display_address", [])
+    for place in resp.json().get("results", []):
+        categories = place.get("categories", [])
+        cuisine_name = categories[0].get("name", "Restaurant") if categories else "Restaurant"
+        location_data = place.get("location", {})
+        address_parts = [
+            location_data.get("address", ""),
+            location_data.get("locality", ""),
+            location_data.get("country", ""),
+        ]
+        address = ", ".join(p for p in address_parts if p)
+
         restaurants.append(RestaurantOption(
-            name=biz.get("name", ""), cuisine=cuisine_name,
-            rating=biz.get("rating", 0),
-            price_level=_price_to_level(biz.get("price", "$$")),
-            address=", ".join(address_parts),
-            phone=biz.get("phone", ""), url=biz.get("url", ""),
-            image_url=biz.get("image_url", ""),
-            review_count=biz.get("review_count", 0),
+            name=place.get("name", ""),
+            cuisine=cuisine_name,
+            rating=round(place.get("rating", 7.0) / 2, 1),  # Foursquare rates 0-10, convert to 0-5
+            price_level=place.get("price", 2),  # Foursquare 1-4
+            address=address,
+            phone="",
+            url=f"https://foursquare.com/v/{place.get('fsq_id', '')}",
+            image_url="",
+            review_count=place.get("stats", {}).get("total_ratings", 0),
         ))
     return restaurants

@@ -19,7 +19,7 @@ class TransportSearchTool(BaseTool):
         flights = asyncio.run(fetch_flights(
             origin=self.origin, destination=self.destination,
             departure_date=self.departure_date, adults=self.travelers,
-            api_key=settings.amadeus_api_key, api_secret=settings.amadeus_api_secret,
+            api_key=settings.aviationstack_api_key,
         ))
         if not flights:
             return "No flights found. Suggest alternative dates or nearby airports."

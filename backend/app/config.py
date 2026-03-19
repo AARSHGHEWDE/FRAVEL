@@ -7,10 +7,9 @@ class Settings(BaseSettings):
     ollama_base_url: str = "http://localhost:11434"
 
     # External APIs
-    amadeus_api_key: str = ""
-    amadeus_api_secret: str = ""
+    aviationstack_api_key: str = ""
     openweather_api_key: str = ""
-    yelp_api_key: str = ""
+    foursquare_api_key: str = ""
     ticketmaster_api_key: str = ""
 
     # Supabase

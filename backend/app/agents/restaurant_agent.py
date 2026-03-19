@@ -12,7 +12,7 @@ class RestaurantSearchTool(BaseTool):
     location: str = ""
 
     def _run(self) -> str:
-        restaurants = asyncio.run(fetch_restaurants(location=self.location, api_key=settings.yelp_api_key))
+        restaurants = asyncio.run(fetch_restaurants(location=self.location, api_key=settings.foursquare_api_key))
         if not restaurants:
             return "No restaurants found."
         return "\n".join(
