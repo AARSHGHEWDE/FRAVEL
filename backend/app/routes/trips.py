@@ -36,3 +36,12 @@ async def get_trip(trip_id: str) -> TripResponse:
 
 def get_planner(trip_id: str) -> PlannerService | None:
     return _planners.get(trip_id)
+
+
+@router.get("/{trip_id}/traces")
+async def get_traces(trip_id: str) -> list[dict]:
+    planner = _planners.get(trip_id)
+    if not planner:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=404, detail="Trip not found")
+    return planner.traces

@@ -1,9 +1,11 @@
 import { motion } from "framer-motion";
 import { DndContext, closestCenter } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
-import { DollarSign, Calendar } from "lucide-react";
+import { DollarSign, Calendar, Activity } from "lucide-react";
 import DayColumn from "./DayColumn";
 import ExportPDF from "./ExportPDF";
+import Button from "../ui/Button";
+import { useTripStore } from "../../store/tripStore";
 import type { Itinerary } from "../../types";
 
 interface ItineraryViewProps {
@@ -11,6 +13,14 @@ interface ItineraryViewProps {
 }
 
 export default function ItineraryView({ itinerary }: ItineraryViewProps) {
+  const tripResponse = useTripStore((s) => s.tripResponse);
+
+  const openTraces = () => {
+    if (tripResponse?.trip_id) {
+      window.open(`/traces/${tripResponse.trip_id}`, "_blank");
+    }
+  };
+
   return (
     <div className="mx-auto max-w-4xl space-y-8" id="itinerary-content">
       <motion.div
@@ -32,6 +42,12 @@ export default function ItineraryView({ itinerary }: ItineraryViewProps) {
             ${itinerary.total_cost.toLocaleString()} {itinerary.currency}
           </span>
           <ExportPDF />
+          {tripResponse?.trip_id && (
+            <Button variant="ghost" size="sm" onClick={openTraces}>
+              <Activity size={14} />
+              View Traces
+            </Button>
+          )}
         </div>
       </motion.div>
 

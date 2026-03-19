@@ -1,3 +1,4 @@
+from collections.abc import Callable
 from crewai import Crew, Process, LLM
 
 from app.config import settings
@@ -16,7 +17,7 @@ def get_llm() -> LLM:
     )
 
 
-def build_crew(trip: TripRequest) -> Crew:
+def build_crew(trip: TripRequest, task_callback: Callable | None = None) -> Crew:
     num_days = (trip.return_date - trip.departure_date).days
     llm = get_llm()
 
@@ -47,5 +48,7 @@ def build_crew(trip: TripRequest) -> Crew:
     return Crew(
         agents=[transport_agent, events_agent, restaurant_agent, weather_agent, itinerary_agent],
         tasks=[transport_task, events_task, restaurant_task, weather_task, itinerary_task],
-        process=Process.sequential, verbose=True,
+        process=Process.sequential,
+        verbose=True,
+        task_callback=task_callback,
     )

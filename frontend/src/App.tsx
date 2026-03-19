@@ -4,6 +4,7 @@ import Plan from "./pages/Plan";
 import Itinerary from "./pages/Itinerary";
 import History from "./pages/History";
 import Auth from "./pages/Auth";
+import Traces from "./pages/Traces";
 import Navbar from "./components/layout/Navbar";
 
 export default function App() {
@@ -18,6 +19,7 @@ export default function App() {
             <Route path="/itinerary/:tripId" element={<Itinerary />} />
             <Route path="/history" element={<History />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/traces/:tripId" element={<Traces />} />
           </Routes>
         </main>
       </div>

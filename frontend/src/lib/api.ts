@@ -21,3 +21,15 @@ export async function createTrip(trip: TripRequest): Promise<TripResponse> {
 export async function getTrip(tripId: string): Promise<TripResponse> {
   return request<TripResponse>(`/trips/${tripId}`);
 }
+
+export async function getTraces(tripId: string): Promise<TraceEntry[]> {
+  return request<TraceEntry[]>(`/trips/${tripId}/traces`);
+}
+
+export interface TraceEntry {
+  agent: string;
+  task: string;
+  output: string;
+  duration_seconds: number;
+  completed_at: string;
+}
