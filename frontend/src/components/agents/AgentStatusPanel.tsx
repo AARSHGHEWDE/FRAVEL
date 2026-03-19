@@ -27,6 +27,12 @@ export default function AgentStatusPanel() {
         <AgentProgressRing progress={progress} />
         <div className="flex-1 space-y-3">
           <h3 className="text-lg font-semibold font-display">AI Agents Working</h3>
+          {agents.length === 0 && (
+            <p className="flex items-center gap-2 text-sm text-surface-500">
+              <Loader2 size={14} className="animate-spin" />
+              Connecting to agents...
+            </p>
+          )}
           <AnimatePresence mode="popLayout">
             {agents.map((agent) => (
               <motion.div

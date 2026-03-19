@@ -6,8 +6,13 @@ import ItineraryView from "../components/itinerary/ItineraryView";
 import { useTripStore } from "../store/tripStore";
 
 export default function Plan() {
-  const { itinerary, isPlanning, tripResponse } = useTripStore();
+  const { itinerary, isPlanning, tripResponse, reset } = useTripStore();
   const navigate = useNavigate();
+
+  // Reset stale planning state when landing on this page fresh
+  useEffect(() => {
+    if (!isPlanning && !itinerary) reset();
+  }, []);
 
   useEffect(() => {
     if (itinerary && tripResponse) {

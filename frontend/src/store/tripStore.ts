@@ -52,7 +52,7 @@ export const useTripStore = create<TripState>((set, get) => ({
             set({ isPlanning: false, error: "Failed to parse itinerary" });
           }
         },
-        (error) => { set({ error }); }
+        (error) => { set({ error, isPlanning: false }); }
       );
     } catch (e) {
       set({ error: (e as Error).message, isPlanning: false });
